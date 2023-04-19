@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "djoser",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "users.apps.UsersConfig",
 ]
 
@@ -127,11 +129,12 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("JWT",),
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60*24),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60 * 24),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
@@ -163,4 +166,14 @@ DJOSER = {
         "user": "users.serializers.UserCreateSerializer",
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "My Recipes API",
+    "DESCRIPTION": "Description",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
 }
