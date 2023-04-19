@@ -155,6 +155,8 @@ DJOSER = {
     "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": True,
     "USERNAME_RESET_SHOW_EMAIL_NOT_FOUND": True,
     "SERIALIZERS": {
-
-    }
+        "user_create": "users.serializers.UserCreateSerializer",
+        "user": "users.serializers.UserCreateSerializer",
+        "user_delete": "djoser.serializers.UserDeleteSerializer",
+    },
 }
