@@ -11,7 +11,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.jwt")),
-
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "",
@@ -23,4 +22,5 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    path("recipes/", include("recipes.urls")),
 ]
