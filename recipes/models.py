@@ -13,7 +13,7 @@ class Recipe(models.Model):
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recipes"
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -22,5 +22,15 @@ class Recipe(models.Model):
     reference_link = models.CharField(max_length=255, blank=True)
     is_public = models.BooleanField(default=False)
 
+    tags = models.ManyToManyField('Tag')
+
     def __str__(self):
         return self.title
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=64)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tags")
+
+    def __str__(self):
+        return self.name

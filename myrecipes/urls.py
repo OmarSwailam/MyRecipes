@@ -23,4 +23,5 @@ urlpatterns = [
         name="redoc",
     ),
     path("recipes/", include("recipes.urls")),
+    path('__debug__/', include('debug_toolbar.urls')),
 ]
