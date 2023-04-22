@@ -31,4 +31,4 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
 
     def get_queryset(self):
-        return Tag.objects.filter(user_id=self.request.user.id)
+        return Tag.objects.all()
