@@ -19,9 +19,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return Recipe.objects.filter(
-            Q(user_id__exact=self.request.user.id) | Q(is_public__exact=True)
-        ).select_related("user").prefetch_related('tags')
+        return (
+            Recipe.objects.filter(
+                Q(user_id__exact=self.request.user.id) | Q(is_public__exact=True)
+            )
+            .select_related("user")
+            .prefetch_related("tags")
+        )
 
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.id)
