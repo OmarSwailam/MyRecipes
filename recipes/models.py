@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 class Recipe(models.Model):
@@ -26,7 +27,7 @@ class Recipe(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    duration = models.IntegerField()
+    duration = models.IntegerField(validators=[MinValueValidator(0)])
     duration_type = models.CharField(
         max_length=1, choices=DURATION_TYPE_CHOICES, default=SECONDS
     )
@@ -67,7 +68,7 @@ class Ingredient(models.Model):
     ]
 
     name = models.CharField(max_length=64)
-    amount = models.DecimalField(max_digits=4, decimal_places=2)
+    amount = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0)])
     amount_type = models.CharField(
         max_length=2, choices=AMOUNT_TYPE_CHOICES, default=GRAM
     )
