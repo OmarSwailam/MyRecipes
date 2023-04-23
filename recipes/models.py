@@ -68,10 +68,18 @@ class Ingredient(models.Model):
     ]
 
     name = models.CharField(max_length=64)
-    amount = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0)])
+    amount = models.DecimalField(
+        max_digits=4, decimal_places=2, validators=[MinValueValidator(0)]
+    )
     amount_type = models.CharField(
         max_length=2, choices=AMOUNT_TYPE_CHOICES, default=GRAM
     )
 
     def __str__(self):
         return f"{self.amount} {self.amount_type} of {self.name}"
+
+    class Image(models.Model):
+        image = models.ImageField(upload_to="recipes")
+        recipe = models.ForeignKey(
+            Recipe, on_delete=models.CASCADE, related_name="images"
+        )
