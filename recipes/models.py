@@ -17,9 +17,9 @@ class Recipe(models.Model):
     MINUETS = "M"
     HOURS = "H"
     DURATION_TYPE_CHOICES = [
-        (LOW, "Low"),
-        (MEDIUM, "Medium"),
-        (HIGH, "High"),
+        (SECONDS, "Second"),
+        (MINUETS, "Minuets"),
+        (HOURS, "Hours"),
     ]
 
     user = models.ForeignKey(
@@ -27,7 +27,9 @@ class Recipe(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    duration = models.IntegerField(validators=[MinValueValidator(0)])
+    duration = models.DecimalField(
+        max_digits=6, decimal_places=2, validators=[MinValueValidator(0)]
+    )
     duration_type = models.CharField(
         max_length=1, choices=DURATION_TYPE_CHOICES, default=SECONDS
     )
@@ -69,7 +71,7 @@ class Ingredient(models.Model):
 
     name = models.CharField(max_length=64)
     amount = models.DecimalField(
-        max_digits=4, decimal_places=2, validators=[MinValueValidator(0)]
+        max_digits=6, decimal_places=2, validators=[MinValueValidator(0)]
     )
     amount_type = models.CharField(
         max_length=2, choices=AMOUNT_TYPE_CHOICES, default=GRAM
@@ -78,8 +80,7 @@ class Ingredient(models.Model):
     def __str__(self):
         return f"{self.amount} {self.amount_type} of {self.name}"
 
-    class Image(models.Model):
-        image = models.ImageField(upload_to="recipes")
-        recipe = models.ForeignKey(
-            Recipe, on_delete=models.CASCADE, related_name="images"
-        )
+
+class Image(models.Model):
+    image = models.ImageField(upload_to="recipes")
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="images")

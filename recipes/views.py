@@ -2,9 +2,18 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer
-from .models import Recipe, Tag, Ingredient
-from .permissions import IsOwnerOrReadOnly, AdminOnlyCanDeletePermission
+from .serializers import (
+    RecipeSerializer,
+    TagSerializer,
+    IngredientSerializer,
+    ImageSerializer,
+)
+from .models import Recipe, Tag, Ingredient, Image
+from .permissions import (
+    IsOwnerOrReadOnly,
+    AdminOnlyCanDeletePermission,
+    ImagesPermission,
+)
 from .filters import RecipeFilter
 
 
@@ -24,6 +33,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .select_related("user")
             .prefetch_related("tags")
             .prefetch_related("ingredients")
+            .prefetch_related("images")
         )
 
 
@@ -37,3 +47,11 @@ class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     permission_classes = [AdminOnlyCanDeletePermission]
+
+
+class ImageViewSet(viewsets.ModelViewSet):
+    serializer_class = ImageSerializer
+    permission_classes = [ImagesPermission]
+
+    def get_queryset(self):
+        return Image.objects.filter(recipe_id=self.kwargs["recipe_pk"])

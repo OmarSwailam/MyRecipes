@@ -1,7 +1,7 @@
 from django.db.models.query import QuerySet
-from rest_framework import serializers
-from .models import Recipe, Tag, Ingredient
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
+from .models import Recipe, Tag, Ingredient, Image
 
 User = get_user_model()
 
@@ -10,6 +10,12 @@ class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "full_name"]
+
+
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = ["id", "image"]
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -46,6 +52,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(read_only=True)
     tags = TagSerializerField(required=False)
     ingredients = IngredientSerializer(many=True)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(), write_only=True, required=False
+    )
+    images = ImageSerializer(read_only=True, many=True)
 
     class Meta:
         model = Recipe
@@ -55,11 +65,14 @@ class RecipeSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "duration",
+            "duration_type",
             "cost",
             "reference_link",
             "is_public",
             "tags",
             "ingredients",
+            "uploaded_images",
+            "images",
         ]
 
     def validate_ingredients(self, attrs):
@@ -69,9 +82,9 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def _create_ingredients(self, ingredients, recipe):
         # Create a list of X objects to be bulk created
-        ingredients_objs = [Ingredient(**ingredient) for ingredient in ingredients]
+        ingredient_objs = [Ingredient(**ingredient) for ingredient in ingredients]
         # Bulk create X objects "bulk_create also check for redundancy"
-        created_ingredients = Ingredient.objects.bulk_create(ingredients_objs)
+        created_ingredients = Ingredient.objects.bulk_create(ingredient_objs)
         # Add the created objects to the recipe
         recipe.ingredients.clear()
         recipe.ingredients.add(*created_ingredients)
@@ -82,20 +95,29 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe.tags.clear()
         recipe.tags.add(*created_tags)
 
+    def _create_images(self, images, recipe):
+        # Image.objects.filter(recipe=recipe).delete()
+        image_objects = [Image(recipe=recipe, image=image) for image in images]
+        Image.objects.bulk_create(image_objects)
+
     def create(self, validated_data):
         tags = validated_data.pop("tags", [])
         ingredients = validated_data.pop("ingredients", [])
+        images = validated_data.pop("uploaded_images", [])
         recipe = Recipe.objects.create(
             user=self.context["request"].user, **validated_data
         )
         self._create_tags(tags, recipe)
         self._create_ingredients(ingredients, recipe)
+        self._create_images(images, recipe)
         return recipe
 
     def update(self, instance, validated_data):
         tags = validated_data.pop("tags", [])
         ingredients = validated_data.pop("ingredients", [])
+        images = validated_data.pop("uploaded_images", [])
         recipe = super(RecipeSerializer, self).update(instance, validated_data)
         self._create_tags(tags, recipe)
         self._create_ingredients(ingredients, recipe)
+        self._create_images(images, recipe)
         return recipe
