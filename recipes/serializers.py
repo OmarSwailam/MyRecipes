@@ -38,9 +38,7 @@ class TagSerializerField(serializers.ListField):
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializerField(required=False)
-    user = SimpleUserSerializer(
-        default=serializers.CurrentUserDefault(), read_only=True
-    )
+    user = SimpleUserSerializer(read_only=True)
 
     class Meta:
         model = Recipe
