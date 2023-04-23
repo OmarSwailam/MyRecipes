@@ -52,29 +52,23 @@ class RecipeSerializer(serializers.ModelSerializer):
             "tags",
         ]
 
-    def create(self, validated_data):
-        tags = validated_data.pop("tags", None)
-        recipe = super(RecipeSerializer, self).create(validated_data)
-
+    def _create_tags(self, tags, recipe):
         # Create a list of Tag objects to be bulk created
         tag_objs = [Tag(name=tag) for tag in tags]
-
-        # Bulk create Tag objects and get their IDs
+        # Bulk create Tag objects "bulk_create also check for redundancy"
         created_tags = Tag.objects.bulk_create(tag_objs)
-
         # Add the created tags to the recipe
         recipe.tags.add(*created_tags)
 
+    def create(self, validated_data):
+        tags = validated_data.pop("tags", None)
+        recipe = super(RecipeSerializer, self).create(validated_data)
+        self._create_tags(self, tags, recipe)
         return recipe
 
     def update(self, instance, validated_data):
         tags = validated_data.pop("tags", None)
         recipe = super(RecipeSerializer, self).update(instance, validated_data)
-
-        tag_objs = [Tag(name=tag) for tag in tags]
-
-        created_tags = Tag.objects.bulk_create(tag_objs)
-
-        recipe.tags.add(*created_tags)
+        self._create_tags(self, tags, recipe)
 
         return recipe
