@@ -33,3 +33,24 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Ingredient(models.Model):
+    KILOGRAM = "KG"
+    GRAM = "G"
+    REGULAR_SPOON = "RS"
+    TEA_SPOON = "TS"
+    LITER = "L"
+    MILLILITER = "ML"
+    TYPE_CHOICES = [
+        (KILOGRAM, "Kilogram"),
+        (GRAM, "Gram"),
+        (REGULAR_SPOON, "Regular Spoon"),
+        (TEA_SPOON, "Tea Spoon"),
+        (LITER, "Liter"),
+        (MILLILITER, "Milliliter"),
+    ]
+
+    name = models.CharField(max_length=64)
+    amount = models.DecimalField(max_digits=4, decimal_places=2)
+    amount_type = models.CharField(max_length=2, choices=TYPE_CHOICES, default=GRAM)
