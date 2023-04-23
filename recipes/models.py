@@ -12,12 +12,24 @@ class Recipe(models.Model):
         (HIGH, "High"),
     ]
 
+    SECONDS = "S"
+    MINUETS = "M"
+    HOURS = "H"
+    DURATION_TYPE_CHOICES = [
+        (LOW, "Low"),
+        (MEDIUM, "Medium"),
+        (HIGH, "High"),
+    ]
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recipes"
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     duration = models.IntegerField()
+    duration_type = models.CharField(
+        max_length=1, choices=DURATION_TYPE_CHOICES, default=SECONDS
+    )
     cost = models.CharField(max_length=1, choices=COST_CHOICES, default=LOW)
     reference_link = models.CharField(max_length=255, blank=True)
     is_public = models.BooleanField(default=False)
@@ -45,7 +57,7 @@ class Ingredient(models.Model):
     TEA_SPOON = "TS"
     LITER = "L"
     MILLILITER = "ML"
-    TYPE_CHOICES = [
+    AMOUNT_TYPE_CHOICES = [
         (KILOGRAM, "Kilogram"),
         (GRAM, "Gram"),
         (REGULAR_SPOON, "Regular Spoon"),
@@ -56,4 +68,9 @@ class Ingredient(models.Model):
 
     name = models.CharField(max_length=64)
     amount = models.DecimalField(max_digits=4, decimal_places=2)
-    amount_type = models.CharField(max_length=2, choices=TYPE_CHOICES, default=GRAM)
+    amount_type = models.CharField(
+        max_length=2, choices=AMOUNT_TYPE_CHOICES, default=GRAM
+    )
+
+    def __str__(self):
+        return f"{self.amount} {self.amount_type} of {self.name}"
