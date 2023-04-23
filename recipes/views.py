@@ -27,9 +27,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .prefetch_related("tags")
         )
 
-    def perform_create(self, serializer):
-        serializer.save(user_id=self.request.user.id)
-
 
 class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer

@@ -1,6 +1,6 @@
 from django.db.models.query import QuerySet
 from rest_framework import serializers
-from .models import Recipe, Tag
+from .models import Recipe, Tag, Ingredient
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -38,11 +38,15 @@ class TagSerializerField(serializers.ListField):
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializerField(required=False)
+    user = SimpleUserSerializer(
+        default=serializers.CurrentUserDefault(), read_only=True
+    )
 
     class Meta:
         model = Recipe
         fields = [
             "id",
+            "user",
             "title",
             "description",
             "duration",
@@ -58,17 +62,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         # Bulk create Tag objects "bulk_create also check for redundancy"
         created_tags = Tag.objects.bulk_create(tag_objs)
         # Add the created tags to the recipe
+        recipe.tags.clear()
         recipe.tags.add(*created_tags)
 
     def create(self, validated_data):
-        tags = validated_data.pop("tags", None)
-        recipe = super(RecipeSerializer, self).create(validated_data)
-        self._create_tags(self, tags, recipe)
+        tags = validated_data.pop("tags", [])
+        recipe = Recipe.objects.create(
+            user=self.context["request"].user, **validated_data
+        )
+        self._create_tags(tags, recipe)
         return recipe
 
     def update(self, instance, validated_data):
-        tags = validated_data.pop("tags", None)
+        tags = validated_data.pop("tags", [])
         recipe = super(RecipeSerializer, self).update(instance, validated_data)
-        self._create_tags(self, tags, recipe)
+        self._create_tags(tags, recipe)
 
         return recipe
