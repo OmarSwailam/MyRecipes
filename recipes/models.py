@@ -23,6 +23,9 @@ class Recipe(models.Model):
     is_public = models.BooleanField(default=False)
 
     tags = models.ManyToManyField("Tag", related_name="tagged_items")
+    ingredients = models.ManyToManyField(
+        "Ingredient", related_name="ingredient_recipes"
+    )
 
     def __str__(self):
         return self.title

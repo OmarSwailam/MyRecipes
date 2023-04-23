@@ -1,12 +1,10 @@
 from django.db.models import Q
-from rest_framework.response import Response
-from rest_framework import viewsets, status, mixins
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .serializers import RecipeSerializer, TagSerializer
-from .models import Recipe, Tag
-from .permissions import IsOwnerOrReadOnly, TagPermission
+from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer
+from .models import Recipe, Tag, Ingredient
+from .permissions import IsOwnerOrReadOnly, AdminOnlyCanDeletePermission
 from .filters import RecipeFilter
 
 
@@ -25,10 +23,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             .select_related("user")
             .prefetch_related("tags")
+            .prefetch_related("ingredients")
         )
 
 
 class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
-    permission_classes = [TagPermission]
+    permission_classes = [AdminOnlyCanDeletePermission]
+
+
+class IngredientViewSet(viewsets.ModelViewSet):
+    serializer_class = IngredientSerializer
+    queryset = Ingredient.objects.all()
+    permission_classes = [AdminOnlyCanDeletePermission]

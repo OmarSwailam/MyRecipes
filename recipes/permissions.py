@@ -17,7 +17,7 @@ class IsOwnerOrReadOnly(BasePermission):
         return obj.user == request.user
 
 
-class TagPermission(BasePermission):
+class AdminOnlyCanDeletePermission(BasePermission):
     """
     Custom permission to only allow users to list, retrieve, or create tags.
     Admin users can delete tags.
@@ -25,10 +25,12 @@ class TagPermission(BasePermission):
 
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS or request.method == "POST":
-            # Allow users to list, retrieve, or create tags
+            # Allow users to list, retrieve, or create
             return True
-        elif request.user.is_authenticated and request.user.is_staff:
-            # Allow admin users to delete tags
+        elif (request.user.is_authenticated and request.user.is_staff) and (
+            request.method in SAFE_METHODS or request.method == "DELETE"
+        ):
+            # Allow admin users to delete
             return True
         else:
             return False

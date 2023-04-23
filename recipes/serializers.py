@@ -12,6 +12,12 @@ class SimpleUserSerializer(serializers.ModelSerializer):
         fields = ["id", "full_name"]
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ["id", "name", "amount", "amount_type"]
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -37,8 +43,9 @@ class TagSerializerField(serializers.ListField):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = TagSerializerField(required=False)
     user = SimpleUserSerializer(read_only=True)
+    tags = TagSerializerField(required=False)
+    ingredients = IngredientSerializer(many=True)
 
     class Meta:
         model = Recipe
@@ -52,28 +59,43 @@ class RecipeSerializer(serializers.ModelSerializer):
             "reference_link",
             "is_public",
             "tags",
+            "ingredients",
         ]
 
+    def validate_ingredients(self, attrs):
+        if len(attrs) == 0:
+            raise serializers.ValidationError("At least one ingredient required")
+        return attrs
+
+    def _create_ingredients(self, ingredients, recipe):
+        # Create a list of X objects to be bulk created
+        ingredients_objs = [Ingredient(**ingredient) for ingredient in ingredients]
+        # Bulk create X objects "bulk_create also check for redundancy"
+        created_ingredients = Ingredient.objects.bulk_create(ingredients_objs)
+        # Add the created objects to the recipe
+        recipe.ingredients.clear()
+        recipe.ingredients.add(*created_ingredients)
+
     def _create_tags(self, tags, recipe):
-        # Create a list of Tag objects to be bulk created
         tag_objs = [Tag(name=tag) for tag in tags]
-        # Bulk create Tag objects "bulk_create also check for redundancy"
         created_tags = Tag.objects.bulk_create(tag_objs)
-        # Add the created tags to the recipe
         recipe.tags.clear()
         recipe.tags.add(*created_tags)
 
     def create(self, validated_data):
         tags = validated_data.pop("tags", [])
+        ingredients = validated_data.pop("ingredients", [])
         recipe = Recipe.objects.create(
             user=self.context["request"].user, **validated_data
         )
         self._create_tags(tags, recipe)
+        self._create_ingredients(ingredients, recipe)
         return recipe
 
     def update(self, instance, validated_data):
         tags = validated_data.pop("tags", [])
+        ingredients = validated_data.pop("ingredients", [])
         recipe = super(RecipeSerializer, self).update(instance, validated_data)
         self._create_tags(tags, recipe)
-
+        self._create_ingredients(ingredients, recipe)
         return recipe
