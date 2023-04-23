@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .serializers import RecipeSerializer, TagSerializer
 from .models import Recipe, Tag
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly, TagPermission
 from .filters import RecipeFilter
 
 
@@ -33,6 +33,5 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
-
-    def get_queryset(self):
-        return Tag.objects.all()
+    queryset = Tag.objects.all()
+    permission_classes = [TagPermission]

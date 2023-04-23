@@ -18,7 +18,7 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
-class TagsSerializerField(serializers.ListField):
+class TagSerializerField(serializers.ListField):
     child = serializers.CharField()
 
     def to_representation(self, data):
@@ -37,7 +37,7 @@ class TagsSerializerField(serializers.ListField):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = TagsSerializerField(required=False)
+    tags = TagSerializerField(required=False)
 
     class Meta:
         model = Recipe
