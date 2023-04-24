@@ -2,6 +2,12 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
 from rest_framework.filters import SearchFilter, OrderingFilter
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+    OpenApiParameter,
+    OpenApiTypes,
+)
 from .serializers import (
     RecipeSerializer,
     TagSerializer,
@@ -17,6 +23,27 @@ from .permissions import (
 from .filters import RecipeFilter
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "me",
+                OpenApiTypes.STR,
+                description="true Or false to filter recipes",
+            ),
+            OpenApiParameter(
+                "tags",
+                OpenApiTypes.STR,
+                description="Comma separated list of tag names to filter",
+            ),
+            OpenApiParameter(
+                "ingredients",
+                OpenApiTypes.STR,
+                description="Comma separated list of ingredient names to filter",
+            ),
+        ]
+    )
+)
 class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter, RecipeFilter]
