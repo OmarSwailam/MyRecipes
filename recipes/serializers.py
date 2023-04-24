@@ -17,6 +17,11 @@ class ImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = ["id", "image"]
 
+    def create(self, validated_data):
+        return Image.objects.create(
+            recipe_id=self.context["recipe_id"], **validated_data
+        )
+
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,7 +56,7 @@ class TagSerializerField(serializers.ListField):
 class RecipeSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(read_only=True)
     tags = TagSerializerField(required=False)
-    ingredients = IngredientSerializer(many=True)
+    ingredients = IngredientSerializer(many=True, required=False)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
@@ -75,10 +80,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             "images",
         ]
 
-    def validate_ingredients(self, attrs):
-        if len(attrs) == 0:
-            raise serializers.ValidationError("At least one ingredient required")
-        return attrs
+    # def validate_ingredients(self, attrs):
+    #     if len(attrs) == 0:
+    #         raise serializers.ValidationError("At least one ingredient required")
+    #     return attrs
 
     def _create_ingredients(self, ingredients, recipe):
         # Create a list of X objects to be bulk created

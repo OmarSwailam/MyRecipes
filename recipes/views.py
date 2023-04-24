@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .serializers import (
     RecipeSerializer,
@@ -55,3 +55,6 @@ class ImageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Image.objects.filter(recipe_id=self.kwargs["recipe_pk"])
+
+    def get_serializer_context(self):
+        return {"recipe_id": self.kwargs["recipe_pk"]}

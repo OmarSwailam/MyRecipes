@@ -45,33 +45,23 @@ class AdminOnlyCanDeletePermission(BasePermission):
 
 class ImagesPermission(BasePermission):
     def has_permission(self, request, view):
-        # Allow anyone to view images if recipe is public
-        if view.action in ["list", "retrieve"] and view.kwargs.get("id"):
-            recipe_id = view.kwargs["id"]
-            try:
-                recipe = Recipe.objects.get(pk=recipe_id)
-            except Recipe.DoesNotExist:
-                return False
-            if recipe.is_public:
+        recipe_id = view.kwargs["recipe_pk"]
+        recipe = Recipe.objects.get(pk=recipe_id)
+        if recipe.user == request.user:
+            return True
+        if recipe.is_public:
+            if request.method in SAFE_METHODS:
                 return True
-
+            elif request.user.is_staff:
+                return True
         return False
 
     def has_object_permission(self, request, view, obj):
-        # Allow anyone to view images if recipe is public
-        if request.method in SAFE_METHODS and obj.recipe.is_public:
+        if request.user == obj.recipe.user:
             return True
-
-        # Allow admin to delete image if recipe is public
-        if (
-            request.method == "DELETE"
-            and request.user.is_staff
-            and obj.recipe.is_public
-        ):
-            return True
-
-        # Allow owner to perform any action
-        if obj.recipe.is_public and obj.recipe.owner == request.user:
-            return True
-
+        if obj.recipe.is_public:
+            if request.method in SAFE_METHODS:
+                return True
+            elif request.user.is_staff:
+                return True
         return False
