@@ -21,6 +21,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "djoser",
+    "social_django",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "django_filters",
@@ -30,6 +33,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "social_django.middleware.SocialAuthExceptionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -57,6 +61,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -139,6 +145,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("JWT",),
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60 * 24 * 7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 EMAIL_BACKEND = "djcelery_email.backends.CeleryEmailBackend"
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -163,9 +170,27 @@ DJOSER = {
     "SERIALIZERS": {
         "user_create": "users.serializers.UserCreateSerializer",
         "user": "users.serializers.UserCreateSerializer",
+        "current_user": "users.serializers.UserCreateSerializer",
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
 }
+
+
+SOCIAL_AUTH_GOOGLE_OAUTH_KEY = env("SOCIAL_AUTH_GOOGLE_OAUTH_KEY")
+SOCIAL_AUTH_GOOGLE_OAUTH_SECRET = env("SOCIAL_AUTH_GOOGLE_OAUTH_SECRET")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "openid",
+]
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["first_name", "last_name"]
+
+
+AUTHENTICATION_BACKENDS = {
+    "social_core_backends.google.GoogleOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+}
+
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "My Recipes API",
